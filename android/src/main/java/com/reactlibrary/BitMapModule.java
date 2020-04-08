@@ -8,6 +8,9 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.io.InputStream;
 public class BitMapModule extends ReactContextBaseJavaModule {
 
     private final ReactApplicationContext reactContext;
@@ -26,7 +29,17 @@ public class BitMapModule extends ReactContextBaseJavaModule {
     public void getPixels(final String imageUri, Promise promise) {
         // TODO: Implement some actually useful functionality
         try {
-            final Bitmap bitmap = BitmapFactory.decodeFile(imageUri);
+            Bitmap bitmap;
+            if (imageUri.startsWith("http")) {
+                URL url = new URL(imageUri);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.connect();
+                InputStream input = connection.getInputStream();
+                bitmap = BitmapFactory.decodeStream(input);
+            } else {
+                bitmap = BitmapFactory.decodeFile(imageUri);
+            }
             final int width = bitmap.getWidth();
             final int height = bitmap.getHeight();
             final int[] pixels = new int[width * height];
